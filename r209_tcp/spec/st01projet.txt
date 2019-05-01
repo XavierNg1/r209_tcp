@@ -1,0 +1,279 @@
+- LES DIFFERENTS TYPES DE MESSAGE 
+---------------------------------------------------------------------------------------------------------------------
+Format ACK
+
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |  ID |                         TIME                                  Field 3      |   Field 4       |
+    | TYPE|                                                               Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          |					   			 
+          |			IP ADDRESS				  
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+       	  |   				  |                         |
+          |             LENGHT            |                         |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                         |
+    |                                                               |
+    .                                                               .
+    .                            USERNAME                           .
+    .                                                               .
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+Format ConnexionMessage 
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |           Field 5             |                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+    |                                                               |
+    .                                                               .
+    .                       Message Data                            .
+    .                                                               .
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+Format MessageGbobal
+
+     0                   1                   2                   3
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    |    Field 1  |   Field 2   |      Field 3      |   Field 4     |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |           Field 5             |                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+    |                                                               |
+    .                                                               .
+    .                       Message Data                            .
+    .                                                               .
+    |                                                               |
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+---------------------------------------------------------------------------------------------------------------------
+
+
+Typemsg (3bits)
+
+error_username_toolong
+error_username_used
+user_list
+list_movie 
+clientmsg 
+connection
+
+
+----------------------------------------------------------------------------------------------------------------------
+- LES SPECIFICATIONS LOGIN
+
+envoie connection request : (typemsg,username, time,length,IP address,port number,message)
+
+	*Delaie d'attente depasse 
+
+renvoi le sms chaque xx seconde jusqu'à reception de l'acquitement
+
+S.envoie ACK==1 (message pas recu en entier après xx seconde d'attente) ackReject()
+	
+	*demande renvoi de message au client
+	*suppression de l'ancien bout de message
+	*rejecter les messages sans entête
+	*attente de message
+
+renvoi du sms chaque xx seconde jusqu'à reception de l'acquitement
+
+
+S.envoie ACK==0 (message bien recu en entier) ackaccept() 
+	*paquet accepter
+
+envoie du server de l'etat de connexion de (typesmsg(error,request,informationConnexion),username,time,length,IP adress,portnumber,message)
+
+	*connection error (type de response)
+	--type1 :username invalide (taille, caractere, pas accepté)
+	--type2 :username existe deja
+
+--Attente de aquitement client pendant xx seconde
+
+renvoi etat de connexion 
+
+
+C. ACK==1
+
+renvoie etat de connexion
+
+C. ACK==0
+
+envoie de connexion request
+
+envoie du server les details de connexion de [typemsg,localisation,time,username, packetlength,liste des userconnecter)]
+envoie du server les details de connexion de [typemsg,localisation,time,username, packetlength,liste des films)]
+	*type0 connection reussit
+			*username valide
+			*ajout username in username
+			*ajout username ds la liste username (Main Room)
+			--envoie la liste des films (nom,ipadress,port)		
+			--envoie liste des utilisateurs connecter (name,room) (affichage)
+			
+
+C. ACK==1
+
+renvoie detail de connexion
+
+C. ACK==0
+
+envoie nouveaux messages à tous les clients (localisation,, time, length, ack, type, message)
+		*Affichages des nouveaux des messages
+		* 
+C ACK==1
+
+renvoie nouveaux messages à tous les clients
+
+C.ACK==0 
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+SPECIFICATION DECONNEXION POUR INNACTIVITÉ
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+SPECIFICATION ACTUALISATION DES MESSAGES CHEZ LES CLIENTS (envoie dernier message recu)
+
+vérification de tous les acquitements éffectué
+	*Ajout message dans la fil d'attente message
+	*Actualisation de la liste de client en defaut: client en attente (attente ACK)
+
+envoi message à tous les clients pas en defaut (localisation,username_source,time, taille packet, message)
+
+--attente acquittement de chaque client durant x seconde
+
+renvoie message chez les client concerné par le manque de ACK
+	*mis à jour de la liste des client en defaut 
+
+c. ACK==0 tous les ACK reçus
+
+--en attente du prochain message à afficher
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+SPECIFICATION ANTI DENI DE SERVICE 
+
+----------------------------------------------------------------------------------------------------------------------
+SPECIFICATION LEAVE MAIN ROOM
+
+
+envoie demande de deconnection
+
+revoie message de deconnection apres attente de x seconde 
+	*Message perdu 
+
+ACK==1
+	*Message pas entier 
+
+renvoie demande deconnection
+
+ACK==0
+
+	*suppresion username de la liste des usernames
+	*ajout date de deconnexion dans le fichier log
+
+------------------------------------------------------------------------------------------------------------------------
+SPECIFICATION LEAVE MOVIE ROOM
+
+envoie demande de sorie de la movie room 
+
+renvoie demande de sorie de la movie room si delai d'attente de AKG dépassé
+	*Message de deconnexion perdu 
+
+ACK==1
+	*Message de deconnection pas entier
+
+renvoie demande de sorie de la movie room si delai d'attente de AKG dépassé
+
+ACK==0 
+
+
+envoie de detail de la main room (liste film (actualisé))
+	*suppression du client de la liste des membres de la movie room
+	*ajout du client à la liste des membre de la main room
+	*renvoie du id des destinataires (0x0,0x1)
+
+
+-------------------------------------------------------------------------------------------------------------------------
+SPECIFICATION SEND MESS IN MAIN ROOM
+
+envoi message au serveur (time,message, taille packet,mysite, ack,typedemessage(error, information))
+	*mis à jour liste des client de la main room
+	*
+
+--attente de ACK
+
+renvoi message au serveur
+
+C. ACK==1
+
+renvoi message au serveur 
+
+c. ACK==0
+
+
+
+
+
+
+  
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

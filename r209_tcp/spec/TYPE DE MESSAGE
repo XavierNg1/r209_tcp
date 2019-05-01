@@ -1,0 +1,93 @@
+- LES DIFFERENTS TYPES DE MESSAGE 
+
+LES SPECIFICATIONS LOGIN
+
+1- envoie connection request : (typemsg,username, time,length,IP address,port number,message)
+
+2- acquitement du server 
+
+3- envoie du server de l'etat de connexion errone (typesmsg(error,request,informationConnexion),username,time,length,IP adress,portnumber,message)
+
+4- connection accepted (typesmsg,localisation,username,time,length,IP adress,portnumber)
+
+5- Aquitement du client
+
+6- envoie des userconnecter du server les details de connexion de [typemsg,localisation,time,username, packetlength,liste des userconnecter)]-----> Main room user et new connected 
+
+7- envoie detail de connection main room (list user actualisé)()--------------------------->user main room 
+
+8- envoie detail de connection movie room (list user actualisé) Movie room  ()--------------------------->userMovieRoom + user 
+
+9- envoie detail de connection movie room (list user actualisé) Movie room  ()--------------------------->userMovieRoom 
+
+10- envoie liste des films du server les details de connexion de [typemsg,localisation,time,username, packetlength,liste des films)]-------------> new connected
+
+11- message d'avertissement pour inactivité ()
+
+12- message de deconnexion
+
+13- envoi demande de connexion à la movie room
+
+14- envoie demande de deconnection movieroom () 
+
+15- envoie demande de deconnection mainroom ()
+
+16- envoie message avertissemnt SPAM pour envoie repeter de sms dans un delai assez court ()----------------user concerned 
+
+17-envoi message de chat au serveur (time,message, taille packet,mysite, ack,typedemessage(error, information)) client <----------> serveur
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1- envoie connection request : (typemsg,username, time,length,IP address,port number,message)
+
+2- acquitement
+
+3- envoie du server de l'etat de connexion errone (typesmsg(error,request,informationConnexion),username,time,length,IP adress,portnumber,message)
+
+4- connection accepted (typesmsg,localisation,username,time,length,IP adress,portnumber)
+
+5- envoie d'etail d'acces à une room du server les details de connexion de [typemsg,localisation,time,username, packetlength,liste des userconnecter)]-----> Client concerné
+
+6- envoie liste des films du server les details de connexion de [typemsg,localisation,time,username, packetlength,liste des films)]-------------> new connected
+
+7- message d'avertissement pour inactivité ()
+
+8- message de deconnexion
+
+9- envoi demande de connexion à la movie room
+
+10- envoie demande de deconnection d'une salle() 
+
+11- envoie message avertissemnt SPAM pour envoie repeter de sms dans un delai assez court ()----------------user concerned 
+
+12-envoi message de chat au serveur (time,message, taille packet,mysite, ack,typedemessage(error, information)) client <----------> serveur
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

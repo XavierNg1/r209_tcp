@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This template is for creating an Internet Draft using xml2rfc,
+     which is available here: http://xml.resource.org. -->
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!-- One method to get references from the online citation libraries.
+     There has to be one entity for each item to be referenced.
+     An alternate method (rfc include) is described in the references. -->
+
+<!ENTITY RFC2629 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2629.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<!-- For a complete list and description of processing instructions (PIs),
+     please see http://xml.resource.org/authoring/README.html. -->
+<!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
+     (Here they are set differently than their defaults in xml2rfc v1.32) -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space
+     (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- do not display copyright and other IETF-related stuff -->
+<?rfc private="(c) GROUP 17, 2019" ?>
+
+<rfc category="info" docName="Application c2w" ipr="trust200902">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN"
+     they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the
+         full title is longer than 39 characters -->
+
+    <title abbrev="G17 Poposition Spec">Group 17: Proposition de specification de protocole
+    </title>
+
+    <!-- add 'role="editor"' below for the editors if appropriate -->
+
+	<author fullname="Claude KADJO MAMI" initials="C.K.M."
+            surname="KADJO MAMI">
+      <organization>Telecom Bretagne</organization>
+
+      <address>
+        <postal>
+          <street>655, Avenue du Technopole</street>
+
+          <!-- Reorder these if your country does things differently -->
+
+          <city>Brest</city>
+
+          <region>Bretagne</region>
+
+          <code>29280</code>
+
+          <country>France</country>
+        </postal>
+
+
+
+        <email>claude-yrvine-axel.kadjo-mami@imt-atlantique.net</email>
+
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+
+	<author fullname = "Eric Xavier N'GUESSAN" initials = "E.X.N"
+			surname="N'GUESSAN">
+		<organization>Telecom Bretagne</organization>
+
+      <address>
+        <postal>
+          <street>655, Avenue du Technopole</street>
+
+          <!-- Reorder these if your country does things differently -->
+
+          <city>Brest</city>
+
+          <region>Bretagne</region>
+
+          <code>29280</code>
+
+          <country>France</country>
+        </postal>
+
+
+
+        <email>eric-xavier.nguessan@imt-atlantique.net</email>
+
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+	</author>
+
+    <date month="March" year="2019" />
+
+
+    <!-- If the month and year are both specified and are the current ones, xml2rfc will fill
+         in the current day for you. If only the current year is specified, xml2rfc will fill
+	 in the current day and month for you. If the year is not the current one, it is
+	 necessary to specify at least a month (xml2rfc assumes day="1" if not specified for the
+	 purpose of calculating the expiry date).  With drafts it is normally sufficient to
+	 specify just the year. -->
+
+    <keyword>c2w</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+         files in a meta tag but they have no effect on text or nroff
+         output. If you submit your draft to the RFC Editor, the
+         keywords will be used for the search engine. -->
+
+    <abstract>
+
+      <t>Ce document presente la specification du protocole de communication
+   utilise au sein de l'application c2w (Chat While Watching);
+  Ce protocole permettra a tous les utilisateurs d'une meme salle
+   (principal ou dee film) de s'echanger des messages.</t>
+
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>Dans le cadre de l'application c2w : Chat While Watching, ce 
+		document decrit la specification du protocole de communication 
+		utilise pour la mise en place de ladite application.
+		Cette application permet a un utilisateur, apres s'etre connecte,
+		d'acceder a un certains nombres de videos, de pouvoir les regarder 
+		d'une part et, d'autre part, de pouvoir echanger des messages avec les 
+		utilisateurs se trouvant dans le meme salon.</t>
+
+	  <t>Le serveur communiquera avec les utilisateurs aussi bien en utilisant
+		le protocole de transport TCP que le protocole UDP. Les messages seront 
+    envoyes sous le format binaire.</t>
+
+	  <t>Dans la suite du document nous spécifierons le fonctionnement
+		du protocole, les types de messages envoyés, le format des differents 
+		messages et donnerons differents exemples de scenarii pouvant arriver dans 
+		l'execution du protocole.</t>
+
+    </section>
+
+	    
+    <section title="Types de paquet">
+    <t>
+    Ce tableau enumere l'ensemble des paquets qui seront utilises au sein
+   de notre systeme.  Leur description se fera dans la suite du document  
+   quand ils seront precises leurs formats de paquets.
+
+    </t>
+
+    <t>
+    <figure align="center" anchor="type_paquet">
+    <artwork>
+
+    +------+--------------------------+-------------------------------+
+    | code |       TypeDePaquet       |      Sens de Transmission     |
+    +------+--------------------------+-------------------------------+
+    | 0000 |       Acquittement       |     Client &lt;-----&gt; Serveur    |
+    | 0001 |   Demande de connexion   |     Client x-----&gt; Serveur    |
+    | 0010 |   Erreur de connexion    |     Client &lt;-----x Serveur    |
+    | 0011 |     Connexion Reussie    |     Client &lt;-----x Serveur    |
+    | 0100 |  Envoi liste des films   |     Client &lt;-----x Serveur    |
+    | 0101 |  Envoi liste de users    |     Client &lt;-----x Serveur    |
+    | 0110 | Avertissemnt Inactivité  |     Client &lt;-----x Serveur    |
+    | 0111 |    Avertissemnt SPAM     |     Client &lt;-----x Serveur    |
+    | 1000 |    Demande acces film    |     Client x-----&gt; Serveur    |
+    | 1001 |    Erreur de sequence    |     Client &lt;-----&gt; Serveur    |
+    | 1010 |  Envoi message de Chat   |     Client &lt;-----&gt; Serveur    |
+    | 1011 |   Quitter la Main room   |     Client x-----&gt; Serveur    |
+    | 1100 | Quitter un salon de film |     Client x-----&gt; Serveur    |
+    | 1101 |  Message de deconnexion  |     Client &lt;-----x Serveur    |
+    |______|__________________________|_______________________________|
+
+  
+  </artwork></figure></t>
+  <t>Sens de Transmission
+  </t>
+  <t><list style="numbers">
+  <t>
+  Client x-----&gt; Server: Indique une communication du client vers le server</t>
+  <t>
+  Client &lt;-----x Server: Indique une communication du server vers le client</t>
+  <t>
+  Client &lt;-----&gt; Server: Indique la possibilité d'avoir le cas 1. et 2. </t>
+  </list></t>
+
+   
+
+    </section>
+
+
+    <section title="Format des Paquets">
+    <t>
+    Dans la suite nous allons decrire les differents types de paquet presentés ci-dessus, 
+    en présentant les différents champs qui les composents
+    La totalité des paquets partagent au minimun les 3 champs 
+    présenté sur la figure 2. Nous eviterons alors 
+    les répétitions dans la suite.
+    </t>
+
+      <t>
+      <figure align="center" anchor="ack1">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+      
+      </artwork></figure></t>            
+
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Code (4 bits)"><vspace blankLines="1" />
+           Codé sur 4 bits il permet d'identifier les 14 différents types de paquets. 
+          </t>
+        </list>
+      </t>
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Sequence (12 bits)"><vspace blankLines="1" />
+          Ce champ represente le numero du paquet envoye. Il permet de 
+          l'identifier de maniere unique dans le systeme. A chaque nouvel
+          envoi, l'emetteur incremente sa valeur de 1.
+          </t>
+        </list>
+      </t>
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Taille (16 bits)"><vspace blankLines="1" />
+          C'est la taille en bit de l'ensemble du message (c'est à dire
+          de tous les champs du paquet reunis).
+          </t>
+        </list>
+      </t>
+    
+
+      <section title="Acquitement"> 
+                <t> Ce paquet est transmis par le server ou le client pour informer 
+                le second acteur de transmission de la reception d'un paquet.
+                </t>
+         <t>
+      <figure align="center" anchor="ack">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      </artwork></figure></t>
+
+
+      <t>           
+           Code (4 bits): informant le client qu'il s'agit d'un acquitement. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+               
+      
+      </section>
+
+      <section title="Erreur de séquence"> 
+                <t>
+                Ce message est envoye lorsqu'il y a contradiction entre la sequence
+                attendue par le recepteur et celle recue. Dans notre systeme, chaque
+                paquet est identifie de maniere unique par son numero de sequence. 
+                Lorsqu'un recepteur recoit plusieurs fois le meme numero de sequence, il
+                detecte la redondance de message et soumet a l'emetteur cette erreur.
+                </t>
+         <t>
+      <figure align="center" anchor="seq_error">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   
+      </artwork></figure></t>
+
+      <t>           
+           Code (4 bits): informant le client qu'il s'agit d'une notification d'erreur de sequence. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits):Taille totale du paquet.
+          </t>
+
+     
+      </section>
+
+      <section title="Demande de connexion"> 
+                <t>Ce paquet est le premier envoyé par le client au server pour la demande de connexion.</t>
+      <t>
+      <figure align="center" anchor="demande_co">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                             Temps                             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      .                            UserName                           .
+      |                                                               |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      </artwork></figure></t>
+
+        <t>           
+           Code (4 bits): informant le server qu'il s'agit d'une demande de connexion à l'application. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+
+      <t> 
+<list hangIndent="8" style="hanging">
+<t hangText="Temps (32 bits)"><vspace blankLines="1" />
+Temps envoyé par le client à chaque interaction volantaire 
+avec le server: Demande de connection, envoie de message Chat ,
+Quitter un film, Demande Acces film.
+Ce temps nous permet de mesurer le temps d'inactivité d'un client.
+Comme présnenter dans le scenarion 3 (Voir 5.3) un client inactif 
+pendant 15 min se fera 
+systematiquent deconnecter lorsqu'il est dans la Main Room, 
+les clients dans les salles de film n'etant pas concerner.
+Cela devrait permettre l'acces au service à d'autre client.
+</t>
+</list>
+      </t>
+
+
+<t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Username (256 bits)"><vspace blankLines="0" />
+          Ce champs contient le Username du demandeur de connexion. Tout les caracteres
+          UTF-8 sont acceptés.
+          Le Username du client est codé sur 256 bits et doit respecter 
+          certaines contraintes lors de la connexion d'un client.
+          <list style="numbers">
+          <t>
+          Le username doit pouvoir etre code sur 256 bits</t>
+          <t>
+          Le Username choisit ne doit pas etre deja utilisé</t>
+          <t>
+          Le username ne doit pas figuré parmis une liste de username jugés offenssant 
+          Exemple : Hitler, Merde,...</t>
+          </list>          
+          </t>        
+                  
+         
+        </list>
+      </t>
+
+
+      
+      </section>
+
+
+      <section title="Erreur de connexion"> 
+                <t>Paquet envoyé au demandeur de connexion lorsque son username est invalide.</t>
+         <t>
+      <figure align="center" anchor="Erreur_co">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      .                        MessageErreur                          .
+      |                                                               |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      </artwork></figure></t>
+        
+       <t>           
+           Code (4 bits): informant le client qu'il s'agit d'une notification d'erreur de connexion. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="MessageErreur (1024 bits)"><vspace blankLines="1" />
+          Ce champ contient un message à afficher lors d'une erreur de connexion.
+          Le contenu du message permettra à l'utilisateur de savoir avec exactitude
+          La cause l'erreur. Le message est encodé en UTF-8. 
+          Suivant l'erreur sur le username le client saura que sont username est deja utilisé
+          , trop long ou n'est pas accepté.
+          </t>
+        </list>
+      </t>
+
+      </section>
+
+      <section title="Connexion Reussie"> 
+                <t>Ce paquet est transmis par le server à un client lorsque la connexion à l'application est acceptée .</t>
+         <t>
+      <figure align="center" anchor="succed_co">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |    IdUser   |
+      +-+-+-+-+-+-+-+
+       </artwork></figure></t>
+      
+       <t>           
+           Code (4 bits): informant le client qu'il s'agit d'une notification de connexion reussie. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="IdUser (7 bits)"><vspace blankLines="1" />
+          Ce champ contient l'identifiant d'un user connecte. 
+           Code sur 7 bits un IdUser est attribue a chaque client lors de sa connexion et doit
+           permettre son identification sans l'utilisation de son
+           username afin de reduire la taille des paquets de
+           communication. Le nombre maximal de User connecté est 128 
+          </t>
+        </list>
+      </t>
+      
+      </section>
+      
+      
+      <section title="Envoie liste des films"> 
+                <t>Ce paquet est transmis au client lors de sa première connexion 
+                (sauf ajout de nouveau film) pour ses futures selection de film à regarder.</t>
+         <t>
+      <figure align="center" anchor="list_films">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                           AdresseIP                           |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |             NumPort           |                               |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+      |                            NomFilm                            |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                           AdresseIP                           |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |             NumPort           |                               |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+      |                            NomFilm                            |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      .                                                               .
+      .                                                               .
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      </artwork></figure></t>
+      
+      
+       <t>           
+           Code (4 bits): informant le client qu'il s'agit de la liste des films disposibles. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+<t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Adresse IP (32 bits)"><vspace blankLines="1" />
+          Ce champ correspond à l'addresse Ip du films situe dans le champ Nomfilm qui suit.
+
+          </t>
+        </list>
+      </t>
+
+
+<t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="NumPort (16 bits)"><vspace blankLines="1" />
+          Ce champ correspond au Port utilisé par le film situe dans le champ Nomfilm qui suit.
+
+           
+          </t>
+        </list>
+      </t>
+
+
+
+
+<t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="NomFilm (256 bits)"><vspace blankLines="1" />
+          Ce champ contient Le nom d'un film. Tous les caratères UTF-8 
+       doivent etre accepter et le message codes sur 256 bits.
+      Le champ Salle (voir 3.10) etant code sur 4 bits l'application
+      doit dispose d'au maximun 15 films, la 16e salle étant la MainRoom 
+      (Salle Principale)
+          </t>
+        </list>
+      </t>
+
+
+
+      </section>
+
+       <section title="Envoie Liste des users"> 
+                <t> Ce paquet est transmis par le server aux differents clients lorsqu'une personne
+                 rejoint ou quitte une salle (MainRoom ou Salle de film). Effectuant
+                 ainsi la mise à jour des clients présents dans chaque salle</t>
+         <t>
+      <figure align="center" anchor="send_user">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |    IdUser   | Salle |                                         |
+      +-+-+-+-+-+-+-+-+-+-+-+      UserName                           .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |    IdUser   | Salle |                                         |
+      +-+-+-+-+-+-+-+-+-+-+-+      UserName                           .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      .                                                               .
+      .                                                               .
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+          
+      </artwork></figure></t>
+
+        <t>           
+           Code (4 bits): informant le client qu'il s'agit 
+           d'une liste de users. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>   
+
+     <t>           
+           IdUser (7 bits): l'identifiant du user dont le u
+           sername se trouve dans le champ qui suit.
+          </t>
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Salle (4 bits)"><vspace blankLines="1" />
+         Ce champ code sur 4 bits contient le numero d'une Salle.
+         0000 peut etre le numero pour designer la Main Room.
+         Chaque Film est aussi representé par sa salle (numero de salle :xxxx !=0000)
+         Le champ salle doit permetre de localiser un client à tout moment.
+         En d'autre terme chaque un client est lier à une salle qui permet au server de connaitre
+         les destinataires des messages qu'il lui envoie.
+            
+          </t>
+        </list>
+      </t>
+
+     <t>           
+           Username (256 bits): Username d'un client se trouvant dans une salle (MainRoom ,Salle de film). (Voir 3.3)
+          </t>
+                  
+      
+      
+      </section>
+
+      <section title="Avertissement Inactivité"> 
+                <t>Ce paquet est transmis à un client se trouvant dans la MainRoom lorque aucune 
+                activité de sa part n'est detectées pendant un durée de 14 min.</t>
+         <t>
+      <figure align="center" anchor="warning_inact">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      .                     AvertissementInactivité                   .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      </artwork></figure></t>
+
+
+       <t>           
+           Code (4 bits): informant le client qu'il s'agit d'un message d'avertissemnt à afficher. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="AvertissementInactivite (1024 bits)"><vspace blankLines="1" />
+        Ce champ contient un message avertissant le client 
+        qu'il sera deconnecté dans 1 minute parce qu'il
+        est inactif dans la MainRoom. Tous les caratères UTF-8 doivent 
+        etre accepter et le message codes sur 1024 bits 
+        Le message doit s'afficher parmis les messages de chat mais etre vu 
+        uniquement par le client concerne. 
+        </t>
+        </list>
+      </t>
+      
+      </section>
+
+       <section title="Avertissement SPAM"> 
+                <t>Ce paquet est transmis à un client se trouvant dans une salle quelconque 
+                lorqu'il envoi plusieurs messages sur un delai très court (2 messages en 1s). 
+                Le server identifie ces messages comme des SPAM.
+                .</t>
+         <t>
+      <figure align="center" anchor="warning_spam">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      .                       AvertissementSPAM                       .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+     
+      </artwork></figure></t>
+
+       <t>           
+           Code (4 bits): informant le client qu'il s'agit d'un message d'avertissemnt à afficher. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="AvertissementSPAM (1024 bits)"><vspace blankLines="1" />
+        Ce champ contient un message avertissement le client 
+        qu'il sera deconnecté dans au prochain avertissement pour envoi repete de message 
+       (2 messages par seconde). Tous les caratères UTF-8 
+       doivent etre accepter et le message codes sur 1024 bits 
+      Le message doit s'afficher parmis les messages de chat mais etre vu 
+      uniquement par le client concerne. 
+          </t>
+        </list>
+      </t>
+      
+      </section>     
+
+      <section title="Demande Accès film"> 
+                <t>Ce paquet est envoyé par un client au server lorsqu'il veut joindre une salle de film.</t>
+         <t>
+      <figure align="center" anchor="acess_movie">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                             Temps                             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Salle |                                                       |
+      +-+-+-+-+                    NomFilm                            .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+          
+      </artwork></figure></t>
+
+       <t>           
+           Code (4 bits): informant le server qu'il s'agit d'une demande d'accès à une salle de film. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+      
+
+       <t>           
+          Temps (32 bits): indiquant au server le temps d'envoi du paquet utilise pour le calcul du temps d'inactivité.
+          Celle nouvelle valeur devient la valeur de reference. (Voir 3.3)
+          </t>
+     
+     <t>           
+           Salle (4 bits): contient la salle actuel du client (MainRoom salle=0000) pour l'avertissement des users de la presente salle.
+          </t>
+    
+
+
+     
+     <t>           
+           NomFilm (256 bits): contient le nom du film souhaité par le client. (voir 3.6)
+          </t>
+     
+      
+      </section>
+
+
+      <section title="Envoie Message de Chat"> 
+                <t>Ce paquet contient les messages courants de discussion dans les salles. Il est transmis par le client au server 
+                et retransmis par le server à l'ensemble des clients concernés</t>
+         <t>
+      <figure align="center" anchor="send_msg">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                             Temps                             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |    IdUser   | Salle |                                         |
+      +-+-+-+-+-+-+-+-+-+-+-+      Message                            .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   
+      </artwork></figure></t>
+
+      <t>           
+           Code (4 bits): Informant le server qu'il s'agit d'un messagde chat à retransmettre. 
+                          Informant le client que c'est un message à afficher (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12 bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16 bits): Taille totale du paquet.
+          </t>
+
+          <t>           
+          Temps (32 bits): indiquant au server le temps d'envoi du paquet utilise pour le calcul du temps d'inactivité.
+          Celle nouvelle valeur devient la valeur de reference. (Voir 3.3)
+          </t>
+     
+
+      <t>           
+           IdUser (7 bits): l'identifiant du user à l'origine du message.
+
+          </t>
+        
+      <t>           
+           Salle (4 bits): la salle du user à l'origine du message.
+
+          </t>
+      
+      
+
+
+      <t> 
+          <list hangIndent="8" style="hanging">
+          <t hangText="Message (Taille variable)"><vspace blankLines="1" />
+          Ce champ contient un message de chat envoye par un client
+          en destination des clients présents dans la meme salle que lui. 
+          Tous les caratères UTF-8 doivent etre accepter 
+          et la taille du message doit etre variable.
+          Le client doit envoyer au plus un message par seconde
+          et message s'afficher uniquement chez les clients de la salle de l'emetteur.   
+          </t>
+        </list>
+      </t>
+
+ 
+      
+      </section>
+
+      <section title="Quitter la MainRoom"> 
+                <t>Ce paquet est transmis par un client au server lorsqu'il souhaite quitter l'application.</t>
+         <t>
+      <figure align="center" anchor="quit_MR">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     
+      </artwork></figure></t>
+
+       <t>           
+           Code (4bits): informant le server que le client souhaite quitter l'application. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16bits): Taille totale du paquet.
+          </t>
+      
+      </section>
+
+      <section title="Quitter un film"> 
+                <t>Ce paquet transmis par le client au server lui signifaint qu'il souhaite 
+                quitter la salle dans laquelle il se trouve et rejoindre la MainRoom</t>
+         <t>
+      <figure align="center" anchor="quit_movie">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                             Temps                             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Salle |
+      +-+-+-+-+      
+      </artwork></figure></t>
+
+       <t>           
+           Code (4bits): informant le server qu'il souhaite rejoindre la Main Room. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16bits): Taille totale du paquet.
+          </t>
+
+     <t> Temps (32 bits): indiquant au server le temps d'envoi du paquet
+   utilise pour le calcul du temps d'inactivite.  Celle nouvelle valeur
+   devient la valeur de reference.  (Voir 3.3)</t>
+
+         
+     <t>           
+           Salle (4 bits): Le client joint sa localisation au message pour que les clients 
+           de cette salle soient avertis de son depart
+          </t>
+      
+      </section>
+
+      <section title="Message de deconnexion"> 
+                <t>Ce message est transmis au client par le server lorsque ce dernier deconnecte volontairement le client de l'application 
+                Soit pour inactivité ou pour un detection de SPAM. </t>
+         <t>
+      <figure align="center" anchor="msg_deco">
+      <artwork>
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      | Code  |        Sequence       |            Taille             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      .                    NotificationDeconnexion                    .                             
+      |                                                               |                             
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      </artwork></figure></t>
+
+       <t>           
+           Code (4bits): informant le client qu'il s'agit d'un message à afficher. (Voir figure 1)
+          </t>
+     
+     <t>           
+           Sequence (12bits): le numero de sequence du paquet.
+          </t>
+     
+     <t>           
+           Taille (16bits): Taille totale du paquet.
+          </t>
+
+        <t>
+        <list hangIndent="8" style="hanging">
+          <t hangText="NotificationDeconnexion (1024 bits)"><vspace blankLines="1" />
+          Ce champ contient un message avertissant le client 
+        qu'il a été deconnecté. Pour ce message, tous les caratères UTF-8 
+       doivent etre accepter et le message codes sur 1024 bits.
+      Le message doit s'afficher parmis les messages de chat mais etre vu 
+      uniquement par le client concerne.
+          </t>
+        </list>
+      </t>
+      
+
+      </section>
+    </section>
+
+    <section title="Fiabilité">
+
+      <t>
+      La fiabilite du protocole est assuree par trois principaux
+      elements : Le numero de sequence, l'acquittement et les messages
+      d'erreur.
+      </t>
+
+      <t>
+      Le type de message acquittement: Ce type de message permet de s'assurer
+      que les utilisateurs ou le serveur ait bien recu le message. Les deux 
+      entites attendent de recevoir ce message avant l'emission du prochain message  
+      meme message. En effet, en cas de non reception du message 
+      d'acquittement, l'emetteur considere que le recepteur n'a pas recu le 
+      message et le renvoie. De cette maniere, nous limitons le nombre de 
+      renvoi de message dans le systeme. Il est a noter qu'en outre, pour ne
+      pas surcharger le serveur, les clients attendront toutes les secondes pour
+      envoyer un message au serveur.
+      </t>
+
+      <t>
+      Le numero de sequence : Chaque message de notre service est associe a un
+      numero de sequence, qui permet de l'identifier de maniere unique. De 
+      cette maniere, nous pouvons determiner si paquet recu est le bon. Prenons
+      un exemple. Supposons que le client A veut communiquer avec le serveur. 
+      Il lui envoie le paquet de sequence 5, le serveur le recoit et lui 
+      envoie un acquittement. Malheureusement, le client ne le recoit pas. Le
+      client renvoie donc le paquet de sequence 5 au serveur. Le serveur
+      ayant deja recu ce paquet, signale une erreur au client en lui envoyant
+      un paquet "Erreur de sequence". Le client A sait donc que le paquet
+      de l'acquittement a ete egare, incremente son compteur de sequence et cesse les reemissions
+      Cela s'averera tres utile dans le cas de la transmission sous le protocole UDP
+      </t>
+
+      <t>
+      Messages d'erreur : Les messages d'erreur envoyes lors de l'execution
+      des taches du serveur permettront de reconnaitre les erreurs produites pas les clients
+      afin de les corriger, sans toutefois avoir à se demander ce qui se passe.
+      </t>
+
+    </section>
+
+    <section title="Exemple de scenario">
+    <section title="Scenario 1(sans erreur): Regarder un film">
+    <t>
+    Dans ce scenario, nous allons expliciter la suite de messages 
+    envoyee entre un client et le serveur lorsque l'utilisateur veut
+    regarder un film sur la plateforme. Nous irons de la connexion au
+    service jusqu'a l'acces au film.
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+
+
+                                         (salle=0000)      (salle!=0000) 
+                                           MainRoom            MovieRoom
+Client A                Serveur            Client B             Client C          
+  |                       |                   |                    |
+  |      Demande de       |                   |                    |                     
+  |      connexion        |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |  (Le client demande   |                   |                    |
+  |  l'acces au service)  |                   |                    |   
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |    Acquittement       |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |  (Le serveur confirme |                   |                    |   
+  |   avoir recu)         |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |  Connexion reussie    |                   |                    |
+  |&lt;-------------- -------|                   |                    |
+  | (Le serveur connecte  |                   |                    |
+  |       le client)      |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |   Envoi liste des     |                   |                    |
+  |        films          |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |     Envoi liste   |                    |
+  |   Envoi liste des     |  des utilisateurs |                    |
+  |     utilisateurs      |------------------&gt;|                    |
+  |&lt;----------------------|(le serveur actua- |                    |
+  |                       |lise la liste des  |                    |
+  |                       | clients connectes)|                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |   Acquittement    |                    |
+  |                       |&lt;------------------|                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |  Demande acces film   |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |    Acquittement       |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |                   |                    |
+  |    Envoi liste        |                   |                    |
+  | des utilisateurs      |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |     (Utilisateurs     |                   |                    |
+  | visionnant le meme    |                   |                    |
+  |   film [salle @001])  |  Envoi liste des  |                    |
+  |                       |    utilisateurs   |                    |
+  |                       |------------------&gt;|                    |
+  |                       | (le serveur actua-|                    |
+  |                       | lise la liste des |                    |
+  |                       | clients connectes)|                    |
+  |                       |                   |                    |
+  |                       | Envoi liste des   |                    |
+  |                       |    utilisateurs   |                    |
+  |                       |---------------------------------------&gt;|
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |   Acquittement    |                    |
+  |                       |&lt;------------------|                    |
+  |                       |                   |                    |
+  |                       |                   |  Acquittement      |
+  |                       |                   |&lt;-------------------|
+  |                       |                   |                    |
+
+
+
+    </artwork></figure></t>
+
+    </section><!--End of example 1-->
+
+
+    <section title="Scenario 2(sans erreur): Chat dans une salle">
+    <t>
+    Ce scenario decrit la suite de message envoyes dans le cas d'un 
+    envoi de messages dans une meme salle.
+    
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+
+
+(salle=1000)                            (salle=1000)        (salle=1000) 
+MovieRoom                                 MainRoom            MovieRoom
+Client A                Serveur           Client B             Client C          
+  |                       |                   |                    |
+  |      Envoi de         |                   |                    |                     
+  |  message : "salut!"   |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |  (Le client envoie    |                   |                    |
+  | un message dans la    |                   |                    |
+  |       salle)          |                   |                    |   
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |    Acquittement       |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |                   |                    | 
+  |                       |     Envoi de      |                    |
+  |                       | message : "salut!"|                    |
+  |                       |------------------&gt;|                    |
+  |                       |                   |                    |
+  |                       |     Envoi de      |                    |
+  |                       | message : "salut!"|                    |
+  |                       |---------------------------------------&gt;|
+  |      Envoi de         |                   |                    |                     
+  |  message : "salut!"   |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |   Acquittement    |                    |
+  |                       |&lt;------------------|                    |
+  |                       |                   |                    |
+  |                       |                   |  Acquittement      |
+  |                       |                   |&lt;-------------------|
+
+    </artwork></figure></t>
+
+    </section><!--End of example 1-->
+
+
+    <section title="Scenario 3(sans erreur): Utilisateur inactif Dans la salle principale">
+    <t>
+    Ce scenario decrit la suite de messages envoyes dans le cas ou un
+    utilisateur est inactif dans la salle principale.
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+
+                                                        (salle=0000) 
+                                                          MainRoom 
+Client A                                Serveur           Client B
+  | =====  Processus de connexion  =====   |                 |
+  | =====     (cf. Scenario 1)     =====   |                 |
+  | ==   (Temps d'inaction = 0 mn)   ==    |                 |
+  .                                        .                 .
+  .                                        .                 .
+  | ==   (Temps d'inaction = 14 mn)   ==   |                 |
+  |                                        |                 |
+  |       Avertissement Inactivite         |                 |
+  |&lt;---------------------------------------|                 |
+  |  (Le serveur previent l'utilisateur)   |                 |
+  |                                        |                 |
+  |             Acquittement               |                 |
+  |---------------------------------------&gt;|                 |
+  .                                        .                 .
+  | ==   (Temps d'inaction = 15 mn)   ==   |                 |
+  |                                        |                 |
+  |        Message de deconnexion          |                 |
+  |&lt;---------------------------------------|                 |
+  |                                        | Envoi liste des |
+  |                                        |  utilisateurs   |
+  |                                        |----------------&gt;|
+  |             Acquittement               |                 |
+  |---------------------------------------&gt;|                 |
+  |                                        |                 |
+  |                                        |   Acquittement  | 
+  |                                        |&lt;----------------|
+  |                                        |                 |
+    </artwork></figure></t>
+
+    </section><!--End of example 1-->
+
+
+    <section title="Scenario 4(sans erreur): Envoie de SPAM">
+    <t>
+    Ce scenario decrit l'ensemble des messages echanges lorsque 
+    l'utilisateur envoie des messages a repetition dans le chat dans le
+    but de nuire (SPAM). Le serveur va donc le deconnecter.
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+    
+(salle=1000)                            (salle=1000)        (salle=1000) 
+MovieRoom                                 MainRoom            MovieRoom
+Client A                Serveur           Client B             Client C          
+  |                       |                   |                    |
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM!"    |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |  (Le client envoie    |                   |                    |
+  | un message dans la    |                   |                    |
+  |       salle)          |                   |                    |   
+  |                       |                   |                    |
+  |     Acquittement      |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |     Envoi de      |                    |
+  |                       | message : "SPAM!" |                    |
+  |                       |------------------&gt;|                    |
+  |                       |                   |                    |
+  |                       |     Envoi de      |                    |
+  |                       | message : "SPAM!" |                    |
+  |                       |---------------------------------------&gt;|
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM"     |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |   Acquittement    |                    |
+  |                       |&lt;------------------|                    |
+  |                       |                   |                    |
+  |                       |                   |  Acquittement      |
+  |                       |                   |&lt;-------------------|
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM!"    |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |     Acquittement      |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |     Envoi de      |                    |
+  |                       | message : "SPAM!" |                    |
+  |                       |------------------&gt;|                    |
+  |                       |                   |                    |
+  |                       |     Envoi de      |                    |
+  |                       | message : "SPAM!" |                    |
+  |                       |---------------------------------------&gt;|
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM"     |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |   Acquittement    |                    |
+  |                       |&lt;------------------|                    |
+  |                       |                   |                    |
+  |                       |                   |  Acquittement      |
+  |                       |                   |&lt;-------------------|
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM!"    |                   |                    |
+  |----------------------&gt;|                   |                    |
+  .                       .                   .                    .
+  .                       .                   .                    .
+  .                       .                   .                    .
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM!"    |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |                   |                    |
+  |     Acquittement      |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |                   |                    |
+  |   Avertissement SPAM  |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |                   |                    |
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |                   |                    |
+  |                       |                   |                    |
+  |      Envoi de         |                   |                    |                     
+  |  message : "SPAM!"    |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |                   |                    |
+  |     Acquittement      |                   |                    |
+  |&lt;----------------------|                   |                    |
+  |                       |                   |                    |
+  |      Message de       |                   |                    |
+  |     deconnexion       |                   |                    |
+  |&lt;----------------------|                   |                    |
+  | ("Vous allez etre     |                   |                    |
+  |   deconnecte pour     |                   |                    |
+  |       SPAM")          |  Envoi liste des  |                    |
+  |                       |   utilisateurs    |                    |
+  |                       |------------------&gt;|                    |
+  |                       |                   |                    |
+  |                       |  Envoi liste des  |                    |
+  |                       |   utilisateurs    |                    |
+  |                       |---------------------------------------&gt;|
+  |    Acquittement       |                   |                    |
+  |----------------------&gt;|                   |                    |
+  |                       |   Acquittement    |                    |
+  |                       |&lt;------------------|                    |
+  |                       |                   |                    |
+  |                       |                   |  Acquittement      |
+  |                       |                   |&lt;-------------------|
+
+
+
+    </artwork></figure></t>
+
+    </section><!--End of example 1-->
+
+
+    <section title="Scenario 5(avec erreur) : Quitter l'application">
+    <t>
+    Dans ce scenario, nous allons simuler la suite de messages envoyes 
+    lorsque l'utilisateur veut quitter l'application. Cependant, nous 
+    ajouterons quelques erreurs qui peuvent arriver dans notre systeme
+    et nous montrerons comment nous comptons les gerer.
+    Sur la figure Seq designera le numero de sequence.
+    </t>
+
+    <t>
+    <figure>
+    <artwork>
+
+Client A                                       Serveur
+  |                                               |
+  |       Quitter un salon de film (Seq = 6)      |
+  |-----------------------x                       |
+  |                                               |
+  |       Quitter un salon de film (Seq = 6)      |
+  |----------------------------------------------&gt;|
+  | (Le client, n'ayant pas recu l'acquittement   |
+  |  attend 2 secondes et renvoie le meme message |
+  | avec le meme numero de sequence au serveur)   |
+  |                                               |
+  |               Acquittement                    |
+  |                   x---------------------------|
+  |     L'acquittement n'a pas atteint le         |
+  |                   client)                     |
+  |                                               |
+  |       Quitter un salon de film  (Seq = 6)     |
+  |----------------------------------------------&gt;|
+  | (Le client, n'ayant pas recu l'acquittement   |
+  |  encore une fois attend 2 secondes et         |
+  |            renvoie le meme message            |
+  | avec le meme numero de sequence au serveur)   |
+  |                                               |
+  |               Erreur de sequence              |
+  |&lt;----------------------------------------------|
+  |  (Le serveur signale au client qu'il a deja   |
+  |   recu cette sequence, lui signalant ainsi    | 
+  |      la reception du message precedent.      
+  |    Le numero de sequence attendu etant        |
+  |                le numero 7)                   |
+  |                                               |
+  |              Acquittement   (Seq = 7)         |
+  |----------------------------------------------&gt;|
+  |         ==== Deconnexion du client ====       |
+
+
+    </artwork></figure></t>
+
+    </section>
+    </section><!--End of example 1-->
+
+    <section title="Conclusion">
+        <t>
+          Chat While Watching est une application offrant aux utilisateurs un 
+        service de chat lorsque ceux-ci selectionnent le film qu'ils
+        veulent regarder ou encore pendant le visionnage. En suivant le 
+        protocole enonce dans ce document, nous pensons que l'application
+        peut garantir ce service de chat tout en gardant un certain confort
+        et une bonne fiabilite.
+        </t>
+    </section>
+   
+    <?rfc needLines="8" ?>
+
+    
+    
+
+  </middle>
+
+  <!--  *****BACK MATTER ***** -->
+
+  <back>
+    <!-- References split into informative and normative -->
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+     1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+     2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+        (for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+
+     Both are cited textually in the same manner: by using xref elements.
+     If you use the PI option, xml2rfc will, by default, try to find included files in the same
+     directory as the including file. You can also define the XML_LIBRARY environment variable
+     with a value containing a set of directories to search.  These can be either in the local
+     filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+   
+
+    <!-- Change Log
+
+v00 2006-03-15  EBD   Initial version
+
+v01 2006-04-03  EBD   Moved PI location back to position 1 -
+                      v3.1 of XMLmind is better with them at this location.
+v02 2007-03-07  AH    removed extraneous nested_list attribute,
+                      other minor corrections
+v03 2007-03-09  EBD   Added comments on null IANA sections and fixed heading capitalization.
+                      Modified comments around figure to reflect non-implementation of
+                      figure indent control.  Put in reference using anchor="DOMINATION".
+                      Fixed up the date specification comments to reflect current truth.
+v04 2007-03-09 AH     Major changes: shortened discussion of PIs,
+                      added discussion of rfc include.
+v05 2007-03-10 EBD    Added preamble to C program example to tell about ABNF and alternative
+                      images. Removed meta-characters from comments (causes problems).  -->
+  </back>
+</rfc>

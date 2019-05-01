@@ -1,0 +1,896 @@
+
+
+
+
+                                                           C. KADJO MAMI
+                                                            E. N'GUESSAN
+                                                        Telecom Bretagne
+                                                       February 28, 2019
+
+
+     Group 17: c2w protocol specification proposal (Binary Version)
+                     draft-ietf-xml2rfc-template-05
+
+Abstract
+
+   Ce document presente la specification du protocole de communication
+   utilise au sein de l'application c2w (Chat While Watching); Ce
+   protocole permettra a tous les utilisateurs du meme type de salon
+   (principal ou de visionnement d'une video) de s'echanger des
+   messages.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Fonctionnement  . . . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Type de Paquet  . . . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Format des Paquets  . . . . . . . . . . . . . . . . . . . . .   4
+     4.1.  Acquitement . . . . . . . . . . . . . . . . . . . . . . .   6
+     4.2.  Erreur de sequence  . . . . . . . . . . . . . . . . . . .   7
+     4.3.  Demande de connexion  . . . . . . . . . . . . . . . . . .   7
+     4.4.  Erreur de connexion . . . . . . . . . . . . . . . . . . .   8
+     4.5.  Connexion Reussie . . . . . . . . . . . . . . . . . . . .   8
+     4.6.  Envoie liste des films  . . . . . . . . . . . . . . . . .   8
+     4.7.  Envoie Liste des users  . . . . . . . . . . . . . . . . .   9
+     4.8.  Avertissement Inactivite  . . . . . . . . . . . . . . . .  10
+     4.9.  Avertissement SPAM  . . . . . . . . . . . . . . . . . . .  10
+     4.10. Demande Acces film  . . . . . . . . . . . . . . . . . . .  11
+     4.11. Envoie Message de Chat  . . . . . . . . . . . . . . . . .  11
+     4.12. Quitter la MainRoom . . . . . . . . . . . . . . . . . . .  12
+     4.13. Quitter un film . . . . . . . . . . . . . . . . . . . . .  12
+     4.14. Message de deconnexion  . . . . . . . . . . . . . . . . .  13
+   5.  Fiabilite . . . . . . . . . . . . . . . . . . . . . . . . . .  13
+   6.  Exemple de scenario . . . . . . . . . . . . . . . . . . . . .  13
+     6.1.  Scenario 1: Regarder un film  . . . . . . . . . . . . . .  13
+     6.2.  Scenario 2: Chat dans une salle . . . . . . . . . . . . .  14
+     6.3.  Scenario 3: User Inactif Dans la main Room  . . . . . . .  14
+     6.4.  Scenario 4: Envoie de SPAM  . . . . . . . . . . . . . . .  15
+     6.5.  Scenario 5: Quitter l'application . . . . . . . . . . . .  15
+     6.6.  Scenario 6: Erreur de Sequence  . . . . . . . . . . . . .  16
+   7.  Conclusion  . . . . . . . . . . . . . . . . . . . . . . . . .  16
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  16
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 1]
+
+                            Abbreviated Title              February 2019
+
+
+1.  Introduction
+
+   Dans le cadre de l'application c2w : Chat While Watching, ce document
+   decrit la specification du protocole de communication utilise pour la
+   mise en place de ladite application.  Cette application permet a un
+   utilisateur, apres s'etre connecte, d'acceder a un certains nombres
+   de videos, de pouvoir les regarder d'une part et, d'autre part, de
+   pouvoir echanger des messages avec les utilisateurs se trouvant dans
+   le meme salon.
+
+   Le serveur communiquera avec les utilisateurs aussi bien en utilisant
+   le protocole de transport TCP que le protocole UDP.  Les messages
+   seront envoyes sous le format binaire.
+
+   Dans la suite du document nous specifierons le fonctionnement du
+   protocole, les types de messages envoyes, le format des differents
+   messages et donnerons differents examples de scenarii pouvant arriver
+   dans l'execution du protocole.
+
+2.  Fonctionnement
+
+   On suppose prealablement qu'un client possede necessairement un
+   couple (adresse IP, port), distinct de tous les autres utilisateurs.
+   Pour pouvoir utiliser l'application c2w, le client doit se connecter
+   au serveur en entrant son pseudo choisi et le nom (ou l'adresse IP)
+   du serveur.  Les noms d'utilisateurs seront en caracteres
+   alphanumeriques, sans caracteres speciaux, et leur taille devra etre
+   compris entre 4 et 32 caracteres.
+
+   Il est a noter que le nom d'utilisateur peut etre refuse pour
+   d'autres raisons: il peut etre deja utilise par un autre client
+   connecte ou il peut faire partie de la liste des noms utilisateur
+   bannis car juges offensant.
+
+   Deux cas sont a analyser, le cas ou le serveur etablie la connexion
+   et le cas ou il la refuse
+
+   Premier cas: La connexion est etablie
+
+   Il y a etablissement de connexion si et seulement si deux (2)
+   conditions sont respectees:
+
+   Le serveur n'est pas sature : Leur serveur est sature si il atteint
+   le nombre maximal d'utilisateurs qu'il peut supporter en l'occurence
+   128. si ce n'est pas le cas la connexion peut etre etablie.
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 2]
+
+                            Abbreviated Title              February 2019
+
+
+   Le nom d'utilisateur est correct: Il respecte les conditions de
+   taille, il est alphanumerique sans caracteres speciaux, il ne fait
+   partie ni des pseudos existants ni des pseudos bannis.
+
+   Une fois ces conditions satisfaites, le client est connecte.  Il
+   accede au salon principal et recoit la liste de tous les utilisateurs
+   connectes (pseudos, presence) et la liste des videos disponibles
+   (nom, adresse IP, port).  La liste des utilisateurs recue par les
+   autres utilisateurs est aussi actualisee.  Pour changer de salon, le
+   client envoie au serveur le nom, le port et l'adresse IP de la video
+   qu'il souhaite visionner.  Il se retrouve alors dans le salon de la
+   video correspondant et recoit en meme temps la liste des utilisateurs
+   regardant la meme video.  Ces derniers sont informes eux aussi de la
+   venue d'un nouvel utilisateur.  Le client peut decider de quitter le
+   salon principal ou un salon de visionnage a tout moment, en envoyant
+   les messages correspondants.
+
+   Deuxieme cas : La connexion est refusee
+
+   La connexion echoue si l'une des deux conditions enoncees
+   precedemment n'est pas respectee.  Le client recoit alors un message
+   d'erreur et est invite a ressaisir ses acces.
+
+3.  Type de Paquet
+
+   Describe the packet format and the headers.  For example, if you have
+   a binary header, you can use a figure like the following example
+   (where we have used the generic name "Field" for most of the fields,
+   you should use the names corresponding to your solution):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 3]
+
+                            Abbreviated Title              February 2019
+
+
+     +------+--------------------------+-------------------------------+
+     | code |       TypeDePaquet       |      Sens de Transmission     |
+     +------+--------------------------+-------------------------------+
+     | 0000 |       Acquitement        |     Client <-----> Server     |
+     | 0001 |   Demande de connexion   |     Client x-----> Server     |
+     | 0010 |   Erreur de connexion    |     Client <-----x Server     |
+     | 0011 |     Connexion Reussie    |     Client <-----x Server     |
+     | 0100 |  Envoie liste des films  |     Client <-----x Server     |
+     | 0101 |  Envoie liste de users   |     Client <-----x Server     |
+     | 0110 | Avertissemnt Inactivite  |     Client <-----x Server     |
+     | 0111 |    Avertissemnt SPAM     |     Client <-----x Server     |
+     | 1000 |    Demande acces film    |     Client x-----> Server     |
+     | 1001 |    Erreur de sequence    |     Client <-----> Server     |
+     | 1010 |  Envoie message de Chat  |     Client <-----> Server     |
+     | 1011 |   Quitter la Main room   |     Client x-----> Server     |
+     | 1100 | Quitter un salon de film |     Client x-----> Server     |
+     | 1101 |  Message de deconnexion  |     Client <-----x Server     |
+     |______|__________________________|_______________________________|
+
+
+
+                                 Figure 1
+
+   Sens de Transmission
+
+   1.  Client x-----> Server:
+
+   2.  Client <-----x Server:
+
+   3.  Client <-----> Server:
+
+4.  Format des Paquets
+
+   Describe the packet format and the headers.  For example, if you have
+   a binary header, you can use a figure like the following example
+   (where we have used the generic name "Field" for most of the fields,
+   you should use the names corresponding to your solution):
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                                 Figure 2
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 4]
+
+                            Abbreviated Title              February 2019
+
+
+   Liste des champs :
+
+   Code (4 bits)
+
+           Code sur 4 bits il permet d'identifier les 14 differents
+           types de paquets.
+
+   Sequence (12 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Taille (16 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   SequenceAttendue (12 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Temps (32 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Username (256 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   MessageErreur (1024 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   IdUser (7 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Adresse IP (32 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   NumPort (16 bits)
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 5]
+
+                            Abbreviated Title              February 2019
+
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   NomFilm (256 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Salle (4 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   AvertissementInactivite (1024 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   AvertissementSPAM (1024 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Message (Taille variable)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   NotificationDeconnexion (1024 bits)
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Cause d'envoie du paquet :
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+   Consequence du paquet :
+
+           Permet d'identifier le type de paquet recu.  Code sur 4 bits
+           il permet de d'envoyer 16 types de paquets differents.
+
+4.1.  Acquitement
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 6]
+
+                            Abbreviated Title              February 2019
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                                 Figure 3
+
+4.2.  Erreur de sequence
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |    SequenceAttendue   |
+       +-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                                 Figure 4
+
+4.3.  Demande de connexion
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                             Temps                             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       .                            UserName                           .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                                 Figure 5
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 7]
+
+                            Abbreviated Title              February 2019
+
+
+4.4.  Erreur de connexion
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       .                        MessageErreur                          .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                                 Figure 6
+
+4.5.  Connexion Reussie
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                             Temps                             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |    IdUser   |
+       +-+-+-+-+-+-+-+
+
+
+                                 Figure 7
+
+4.6.  Envoie liste des films
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 8]
+
+                            Abbreviated Title              February 2019
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                           AdresseIP                           |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |             NumPort          |                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+       |                            NomFilm                            |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                           AdresseIP                           |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |             NumPort           |                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+       |                            NomFilm                            |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       .                                                               .
+       .                                                               .
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                                 Figure 8
+
+4.7.  Envoie Liste des users
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019               [Page 9]
+
+                            Abbreviated Title              February 2019
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |    IdUser   | Salle |                                         |
+       +-+-+-+-+-+-+-+-+-+-+-+      UserName                           .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |    IdUser   | Salle |                                         |
+       +-+-+-+-+-+-+-+-+-+-+-+      UserName                           .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       .                                                               .
+       .                                                               .
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+                                 Figure 9
+
+4.8.  Avertissement Inactivite
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       .                     AvertissementInactivite                   .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+
+                                 Figure 10
+
+4.9.  Avertissement SPAM
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 10]
+
+                            Abbreviated Title              February 2019
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       .                       AvertissementSPAM                       .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+
+                                 Figure 11
+
+4.10.  Demande Acces film
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                             Temps                             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Salle |                                                       |
+       +-+-+-+-+                    NomFilm                            .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+                                 Figure 12
+
+4.11.  Envoie Message de Chat
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 11]
+
+                            Abbreviated Title              February 2019
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                             Temps                             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |    IdUser   | Salle |                                         |
+       +-+-+-+-+-+-+-+-+-+-+-+      Message                            .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                                 Figure 13
+
+4.12.  Quitter la MainRoom
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+                                 Figure 14
+
+4.13.  Quitter un film
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Salle |
+       +-+-+-+-+
+
+                                 Figure 15
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 12]
+
+                            Abbreviated Title              February 2019
+
+
+4.14.  Message de deconnexion
+
+   By default 3 levels of nesting show in table of contents but that can
+   be adjusted with the value of the "tocdepth" processing instruction.
+
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       | Code  |        Sequence       |            Taille             |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       .                    NotificationDeconnexion                    .
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+
+
+                                 Figure 16
+
+5.  Fiabilite
+
+6.  Exemple de scenario
+
+6.1.  Scenario 1: Regarder un film
+
+   Description of the scenario and then the corresponding messages:
+
+   MSG 1 from toto to titi
+
+   etc
+
+   You can also use a figure like this:
+
+        Alice                                            Bob
+           |                                               |
+           |             Message 1 (Request)               |
+           |---------------------------------------------->|
+           |            (details of the message)           |
+           |                                               |
+           |                                               |
+           |               Message 2 (Response)            |
+           |<----------------------------------------------|
+           |                   (Details)                   |
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 13]
+
+                            Abbreviated Title              February 2019
+
+
+6.2.  Scenario 2: Chat dans une salle
+
+   Description of the scenario and then the corresponding messages:
+
+   MSG 1 from toto to titi
+
+   etc
+
+   You can also use a figure like this:
+
+        Alice                                            Bob
+           |                                               |
+           |             Message 1 (Request)               |
+           |---------------------------------------------->|
+           |            (details of the message)           |
+           |                                               |
+           |                                               |
+           |               Message 2 (Response)            |
+           |<----------------------------------------------|
+           |                   (Details)                   |
+
+
+6.3.  Scenario 3: User Inactif Dans la main Room
+
+   Description of the scenario and then the corresponding messages:
+
+   MSG 1 from toto to titi
+
+   etc
+
+   You can also use a figure like this:
+
+        Alice                                            Bob
+           |                                               |
+           |             Message 1 (Request)               |
+           |---------------------------------------------->|
+           |            (details of the message)           |
+           |                                               |
+           |                                               |
+           |               Message 2 (Response)            |
+           |<----------------------------------------------|
+           |                   (Details)                   |
+
+
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 14]
+
+                            Abbreviated Title              February 2019
+
+
+6.4.  Scenario 4: Envoie de SPAM
+
+   Description of the scenario and then the corresponding messages:
+
+   MSG 1 from toto to titi
+
+   etc
+
+   You can also use a figure like this:
+
+        Alice                                            Bob
+           |                                               |
+           |             Message 1 (Request)               |
+           |---------------------------------------------->|
+           |            (details of the message)           |
+           |                                               |
+           |                                               |
+           |               Message 2 (Response)            |
+           |<----------------------------------------------|
+           |                   (Details)                   |
+
+
+6.5.  Scenario 5: Quitter l'application
+
+   Description of the scenario and then the corresponding messages:
+
+   MSG 1 from toto to titi
+
+   etc
+
+   You can also use a figure like this:
+
+        Alice                                            Bob
+           |                                               |
+           |             Message 1 (Request)               |
+           |---------------------------------------------->|
+           |            (details of the message)           |
+           |                                               |
+           |                                               |
+           |               Message 2 (Response)            |
+           |<----------------------------------------------|
+           |                   (Details)                   |
+
+
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 15]
+
+                            Abbreviated Title              February 2019
+
+
+6.6.  Scenario 6: Erreur de Sequence
+
+   Description of the scenario and then the corresponding messages:
+
+   MSG 1 from toto to titi
+
+   etc
+
+   You can also use a figure like this:
+
+        Alice                                            Bob
+           |                                               |
+           |             Message 1 (Request)               |
+           |---------------------------------------------->|
+           |            (details of the message)           |
+           |                                               |
+           |                                               |
+           |               Message 2 (Response)            |
+           |<----------------------------------------------|
+           |                   (Details)                   |
+
+
+7.  Conclusion
+
+   Your conclusion goes here.
+
+Authors' Addresses
+
+   Claude KADJO MAMI
+   Telecom Bretagne
+   655, Avenue du Technopole
+   Brest, Bretagne  29280
+   France
+
+   Email: claude-yrvine-axel.kadjo-mami@imt-atlantique.net
+
+
+   Eric Xavier N'GUESSAN
+   Telecom Bretagne
+   655, Avenue du Technopole
+   Brest, Bretagne  29280
+   France
+
+   Email: eric-xavier.nguessan@imt-atlantique.net
+
+
+
+
+
+
+
+KADJO MAMI & N'GUESSAN  Expires September 1, 2019              [Page 16]
